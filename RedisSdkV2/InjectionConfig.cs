@@ -6,11 +6,16 @@ namespace RedisSdkV2;
 public static class InjectionConfig
 {
 
-    public static void UseRedisSdk(this IServiceCollection services, string redisHostAddress)
+    public static void UseRedisSdkForSingleNode(this IServiceCollection services, string redisHostAddress)
     {
         services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisHostAddress));
-        
         services.AddTransient<IRedisService, RedisService>();
+    }
+
+    public static void UseRedisSdkForMultipleNodes(this IServiceCollection services, List<string> redisHostAddressList)
+    {
+        var connectionMultiplexers = redisHostAddressList.Select(x=> ConnectionMultiplexer.Connect(x)).ToList();
+        connectionMultiplexers.ForEach(x=> services.AddSingleton<IConnectionMultiplexer>(x));
     }
     
     
