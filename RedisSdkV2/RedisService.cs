@@ -18,7 +18,7 @@ public class RedisService(IConnectionMultiplexer connectionMultiplexer) : IRedis
         var redisValue = _redis.StringGet(key);
         if (redisValue.IsNullOrEmpty)
         {
-            _redis.StringSet(key, func.Invoke()!.ToString(), TimeSpan.FromSeconds(10));
+            _redis.StringSet(key, JsonSerializer.Serialize(func.Invoke()),  TimeSpan.FromSeconds(10));
         }
         
         return  JsonSerializer.Deserialize<T>(_redis.StringGet(key).ToString())!;
