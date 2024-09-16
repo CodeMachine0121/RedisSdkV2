@@ -5,7 +5,7 @@ namespace RedisSdkV2;
 
 public interface IRedisService
 {
-    T GetOrCreate<T>(string key, Func<T> func);
+    T GetOrCreate<T>(string key, Func<T> func, TimeSpan timeout);
     void Update<T>(string key, T value);
 }
 
@@ -13,12 +13,13 @@ public class RedisService(IConnectionMultiplexer connectionMultiplexer) : IRedis
 {
     private readonly IDatabase _redis = connectionMultiplexer.GetDatabase();
 
-    public T GetOrCreate<T>(string key, Func<T> func)
+    public T GetOrCreate<T>(string key, Func<T> func, TimeSpan timeout)
     {
         var redisValue = _redis.StringGet(key);
         if (redisValue.IsNullOrEmpty)
         {
-            _redis.StringSet(key, JsonSerializer.Serialize(func.Invoke()),  TimeSpan.FromSeconds(10));
+            var invoke = func.Invoke();
+            _redis.StringSet(key, JsonSerializer.Serialize(invoke),  timeout);
         }
         
         return  JsonSerializer.Deserialize<T>(_redis.StringGet(key))!;
