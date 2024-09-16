@@ -5,6 +5,8 @@ namespace RedisSdkV2;
 
 public interface IRedisService
 {
+    T GetOrCreate<T>(string key, Func<T> func);
+    void Update<T>(string key, T value);
 }
 
 public class RedisService(IConnectionMultiplexer connectionMultiplexer) : IRedisService
