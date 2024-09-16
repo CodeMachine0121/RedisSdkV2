@@ -3,7 +3,11 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
+        <PackageId>RedisSdkV2</PackageId>
+        <Version>1.0.1</Version>
+        <Authors>James Hsueh</Authors>
+        <Descirption>Tool for using Redis</Descirption>
+        <PackageTags>Redis</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
