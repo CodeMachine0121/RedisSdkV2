@@ -21,7 +21,7 @@ public class RedisService(IConnectionMultiplexer connectionMultiplexer) : IRedis
             _redis.StringSet(key, JsonSerializer.Serialize(func.Invoke()),  TimeSpan.FromSeconds(10));
         }
         
-        return  JsonSerializer.Deserialize<T>(_redis.StringGet(key).ToString())!;
+        return  JsonSerializer.Deserialize<T>(_redis.StringGet(key))!;
     }
 
     public void Update<T>(string key, T value)
