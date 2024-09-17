@@ -5,35 +5,35 @@ namespace RedisSdkV2;
 
 public interface IRedisService
 {
-    T GetOrCreate<T>(string key, Func<T> func, TimeSpan timeout);
-    void Update<T>(string key, T value);
+    Task<T> GetOrCreate<T>(string key, Func<T> func, TimeSpan timeout);
+    Task Update<T>(string key, T value);
 }
 
 public class RedisService(IConnectionMultiplexer connectionMultiplexer) : IRedisService
 {
     private readonly IDatabase _redis = connectionMultiplexer.GetDatabase();
 
-    public T GetOrCreate<T>(string key, Func<T> func, TimeSpan timeout)
+    public async Task<T> GetOrCreate<T>(string key, Func<T> func, TimeSpan timeout)
     {
-        var redisValue = _redis.StringGet(key);
+        var redisValue = await _redis.StringGetAsync(key);
         if (redisValue.IsNullOrEmpty)
         {
             var invoke = func.Invoke();
-            _redis.StringSet(key, JsonSerializer.Serialize(invoke),  timeout);
+            await _redis.StringSetAsync(key, JsonSerializer.Serialize(invoke),  timeout);
         }
         
-        return  JsonSerializer.Deserialize<T>(_redis.StringGet(key))!;
+        return  JsonSerializer.Deserialize<T>(await _redis.StringGetAsync(key))!;
     }
 
-    public void Update<T>(string key, T value)
+    public async Task Update<T>(string key, T value)
     {
-        var redisValue = _redis.StringGet(key);
+        var redisValue = await _redis.StringGetAsync(key);
         if (redisValue.IsNullOrEmpty)
         {
             throw new KeyNotFoundException("Key not found in Redis");
         }
         
-        _redis.StringSet(key, JsonSerializer.Serialize(value), TimeSpan.FromSeconds(10));
+        await _redis.StringSetAsync(key, JsonSerializer.Serialize(value), TimeSpan.FromSeconds(10));
     }
 
 
