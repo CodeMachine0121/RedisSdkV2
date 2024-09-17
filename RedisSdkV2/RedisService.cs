@@ -20,6 +20,7 @@ public class RedisService(IConnectionMultiplexer connectionMultiplexer) : IRedis
         {
             var invoke = func.Invoke();
             await _redis.StringSetAsync(key, JsonSerializer.Serialize(invoke),  timeout);
+            return invoke;
         }
         
         return  JsonSerializer.Deserialize<T>(redisValue)!;
