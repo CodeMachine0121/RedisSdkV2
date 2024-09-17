@@ -15,29 +15,29 @@ public class RedisRedLockService(IConnectionMultiplexer connectionMultiplexer, I
 
     public async Task<T> GetOrCreate<T>(string key, Func<T> func, TimeSpan timeout)
     {
-        using (var redLock = await _redLockFactory.CreateLockAsync($"lock-{key}", timeout, TimeSpan.FromSeconds(10),
-                   TimeSpan.FromSeconds(5)))
+        await using var redLock = await _redLockFactory.CreateLockAsync($"lock-{key}", timeout, TimeSpan.FromSeconds(10),
+            TimeSpan.FromSeconds(5));
+        
+        if (redLock.IsAcquired)
         {
-            if (redLock.IsAcquired) return await redisService.GetOrCreate(key, func, timeout);
-
-            throw new RedisException("Could not acquire a lock");
+            return await redisService.GetOrCreate(key, func, timeout);
         }
+
+        throw new RedisException("Could not acquire a lock");
     }
 
     public async Task Update<T>(string key, T value)
     {
-        using (var redLock = await _redLockFactory.CreateLockAsync($"lock-{key}", TimeSpan.FromSeconds(10),
-                   TimeSpan.FromSeconds(10),
-                   TimeSpan.FromSeconds(5)))
+        await using var redLock = await _redLockFactory.CreateLockAsync($"lock-{key}", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10),
+            TimeSpan.FromSeconds(5));
+        
+        if (redLock.IsAcquired)
         {
-            if (redLock.IsAcquired)
-            {
-                await redisService.Update(key, value);
-                return;
-            }
-
-            throw new RedisException("Could not acquire a lock");
+            await redisService.Update(key, value);
+            return;
         }
+        
+        throw new RedisException("Could not acquire a lock");
     }
 }
 
