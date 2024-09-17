@@ -5,7 +5,7 @@ namespace RedisSdkV2;
 
 public interface IRedisService
 {
-    Task<T> GetOrCreate<T>(string key, Func<T> func, TimeSpan timeout);
+    Task<T> GetOrCreate<T>(string key, Func<Task<T>> func, TimeSpan timeout);
     Task Update<T>(string key, T value);
 }
 
@@ -13,12 +13,12 @@ public class RedisService(IConnectionMultiplexer connectionMultiplexer) : IRedis
 {
     private readonly IDatabase _redis = connectionMultiplexer.GetDatabase();
 
-    public async Task<T> GetOrCreate<T>(string key, Func<T> func, TimeSpan timeout)
+    public async Task<T> GetOrCreate<T>(string key, Func<Task<T>> func, TimeSpan timeout)
     {
         var redisValue = await _redis.StringGetAsync(key);
         if (redisValue.IsNullOrEmpty)
         {
-            var invoke = func.Invoke();
+            var invoke = await func();
             await _redis.StringSetAsync(key, JsonSerializer.Serialize(invoke),  timeout);
             return invoke;
         }

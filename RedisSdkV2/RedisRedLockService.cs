@@ -13,7 +13,7 @@ public class RedisRedLockService(IConnectionMultiplexer connectionMultiplexer, I
     });
 
 
-    public async Task<T> GetOrCreate<T>(string key, Func<T> func, TimeSpan timeout)
+    public async Task<T> GetOrCreate<T>(string key, Func<Task<T>> func, TimeSpan timeout)
     {
         await using var redLock = await _redLockFactory.CreateLockAsync($"lock-{key}", timeout, TimeSpan.FromSeconds(10),
             TimeSpan.FromSeconds(5));
@@ -43,6 +43,6 @@ public class RedisRedLockService(IConnectionMultiplexer connectionMultiplexer, I
 
 public interface IRedisRedLockService
 {
-    Task<T> GetOrCreate<T>(string key, Func<T> func, TimeSpan timeout);
+    Task<T> GetOrCreate<T>(string key, Func<Task<T>> func, TimeSpan timeout);
     Task Update<T>(string key, T value);
 }
