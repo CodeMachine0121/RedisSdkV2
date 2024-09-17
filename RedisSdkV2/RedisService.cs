@@ -22,7 +22,7 @@ public class RedisService(IConnectionMultiplexer connectionMultiplexer) : IRedis
             await _redis.StringSetAsync(key, JsonSerializer.Serialize(invoke),  timeout);
         }
         
-        return  JsonSerializer.Deserialize<T>(await _redis.StringGetAsync(key))!;
+        return  JsonSerializer.Deserialize<T>(redisValue)!;
     }
 
     public async Task Update<T>(string key, T value)

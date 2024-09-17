@@ -34,7 +34,7 @@ public class RedisRedLockService(IConnectionMultiplexer connectionMultiplexer, I
         if (redLock.IsAcquired)
         {
             await redisService.Update(key, value);
-            
+            return;
         }
         
         throw new RedisException("Could not acquire a lock");
