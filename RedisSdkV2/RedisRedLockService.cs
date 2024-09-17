@@ -5,7 +5,7 @@ using StackExchange.Redis;
 namespace RedisSdkV2;
 
 public class RedisRedLockService(IConnectionMultiplexer connectionMultiplexer, IRedisService redisService)
-    : IRedisService
+    : IRedisRedLockService
 {
     private readonly RedLockFactory _redLockFactory = RedLockFactory.Create(new List<RedLockMultiplexer>
     {
@@ -39,4 +39,10 @@ public class RedisRedLockService(IConnectionMultiplexer connectionMultiplexer, I
         
         throw new RedisException("Could not acquire a lock");
     }
+}
+
+public interface IRedisRedLockService
+{
+    Task<T> GetOrCreate<T>(string key, Func<T> func, TimeSpan timeout);
+    Task Update<T>(string key, T value);
 }

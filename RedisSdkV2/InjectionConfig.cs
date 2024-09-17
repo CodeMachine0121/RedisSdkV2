@@ -5,33 +5,21 @@ namespace RedisSdkV2;
 
 public static class InjectionConfig
 {
-    public static void UseRedisSdkForSingleNode(this IServiceCollection services, string redisHostAddress,
-        bool isRedLock = false)
+    public static void UseRedisSdkForSingleNode(this IServiceCollection services, string redisHostAddress)
     {
         services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisHostAddress));
 
-        if (isRedLock)
-        {
-            services.AddTransient<IRedisService, RedisRedLockService>();
-        }
-        else
-        {
-            services.AddTransient<IRedisService, RedisService>();
-        }
+        services.AddTransient<IRedisRedLockService, RedisRedLockService>();
+        services.AddTransient<IRedisService, RedisService>();
     }
 
-    public static void UseRedisSdkForMultipleNodes(this IServiceCollection services, List<string> redisHostAddressList, bool isRedLock = false)
+    public static void UseRedisSdkForMultipleNodes(this IServiceCollection services, List<string> redisHostAddressList)
     {
         var connectionMultiplexers = redisHostAddressList.Select(x => ConnectionMultiplexer.Connect(x)).ToList();
-        if (isRedLock)
+        connectionMultiplexers.ForEach(x =>
         {
-            connectionMultiplexers.ForEach(x=> 
-                services.AddSingleton<IConnectionMultiplexer>(x));
-        }
-        else
-        {
-            connectionMultiplexers.ForEach(x => 
-                services.AddSingleton<IConnectionMultiplexer>(x));
-        }
+            services.AddSingleton<IConnectionMultiplexer>(x);
+            services.AddSingleton<IConnectionMultiplexer>(x);
+        });
     }
 }
